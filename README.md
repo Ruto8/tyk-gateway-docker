@@ -1,60 +1,19 @@
 Tyk Gateway Docker
 =================================
 
-This container only contains the Tyk OSS API Gateway, the Tyk Dashboard is provided as a separate container and needs to be configured separately.
+The purpose of this repository is to produce an environment were an issue related to custom auth plugin in Tyk can be easily reproduced.
 
+Steps to reproduce:
 
-# Installation
+1. `docker compose up tyk-gateway`
+2. `curl --location --request GET 'localhost:8080/tyk-auth-test/' --header 'Authorization: test' --header 'X-Should-Authorize: true'`
 
-Want to install using only Docker, or want a more advanced guide?  Visit the [Docker install](get-started/install-with-docker.md) page.
-
-## Docker-Compose
-
-With docker-compose, simply run 
+Actual result:
 ```
-$ docker-compose up -d
-```
-
-[1. Your First API](get-started/your-first-api.md)
-
-[2. Your first token](get-started/your-first-token.md)
-
-[3. Your First Plugin](get-started/your-first-plugin.md)
-
-
-## Hybrid
-
-If you are setting up a Hybrid cluster, do the following:
-
-**NOTE:** If you are using Tyk Classic Cloud your `<MDCB-INGRESS>` url is: "hybrid.cloud.tyk.io:9091"
-
-1. Change the following 3 values in `tyk.hybrid.conf`:
-```json
-    "slave_options": {
-        "rpc_key": "<ORG_ID>",
-        "api_key": "<API-KEY>",
-        "connection_string": "<MDCB-INGRESS>:443",
+{
+    "error": "Session state is missing or unset! Please make sure that auth headers are properly applied"
+}
 ```
 
-it should look like this:
-
-```json
-    "slave_options": {
-        "rpc_key": "j3jf8as9991ad881349",
-        "api_key": "adk12k9d891j48df824",
-        "connection_string": "persistent-bangalore-hyb.aws-usw2.cloud-ara.tyk.io:443",
-```
-
-2. Mount the hybrid conf into the Gateway in `docker-compose.yml`
-
-From
-```
-- ./tyk.standalone.conf:/opt/tyk-gateway/tyk.conf
-```
-
-To:
-```
-- ./tyk.hybrid.conf:/opt/tyk-gateway/tyk.conf
-```
-
-That's it!  Now run `docker-compose up`
+Expected result:
+There should be no error and the request should be proxied to httpbin according to the api definition object.
